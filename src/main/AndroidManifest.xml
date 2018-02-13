@@ -1,0 +1,6 @@
+<!-- Copyright (c) 2018 GoMeta. All right reserved. -->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="io.gometa.support.obj">
+    <uses-feature android:glEsVersion="0x00020000" android:required="true"/>
+</manifest>
