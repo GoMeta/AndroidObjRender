@@ -121,7 +121,8 @@ class ObjExtractor(
 
     private fun createRenderers(mtlMap: HashMap<String, MtlRenderer>, obj: Obj) {
         val renderers = ArrayList<SingleObjRenderer>()
-        ObjSplitting.splitByMaterialGroups(obj)
+        ObjUtils.convertToRenderable(obj)
+            .let(ObjSplitting::splitByMaterialGroups)
             .entries
             .forEach { (materialName, obj) ->
                 val mtlRenderer = mtlMap[materialName] ?: run {
@@ -130,15 +131,16 @@ class ObjExtractor(
                     return@forEach
                 }
                 if (obj.numVertices <= Short.MAX_VALUE) {
-                    renderers.add(SingleObjRenderer(ObjUtils.convertToRenderable(obj), mtlRenderer))
+                    renderers.add(SingleObjRenderer(obj, mtlRenderer))
                 } else {
                     ObjSplitting.splitByMaxNumVertices(obj, Short.MAX_VALUE.toInt())
-                        .map { ObjUtils.convertToRenderable(it) }
                         .forEach { objPart ->
                             renderers.add(SingleObjRenderer(objPart, mtlRenderer))
                         }
                 }
             }
+        Timber.d("Creating renderer from %d parts and %d materials",
+            renderers.size, mtlMap.size)
         postResult(ObjRenderer(renderers, mtlMap.values))
     }
 
