@@ -24,6 +24,7 @@ import com.bumptech.glide.Glide
 import de.javagl.obj.Mtl
 import de.javagl.obj.TextureOptions
 import io.gometa.support.obj.VirtualObject.Companion.normalizeVec3
+import timber.log.Timber
 
 /**
  *
@@ -66,7 +67,7 @@ class MtlRenderer(
             // Already initialized for this GL context
             return
         } else if (owningThreadId != null) {
-            throw RuntimeException("This renderer is owned by another GL context")
+            Timber.w("This renderer is owned by another GL context")
         }
 
         // Allocate the textures
@@ -162,7 +163,8 @@ class MtlRenderer(
 
     fun destroy() {
         if (owningThreadId != Thread.currentThread().id) {
-            throw RuntimeException("Calling destroy() from non-owning thread")
+            Timber.w("Calling destroy() from non-owning thread")
+            return
         }
 
         GLES20.glDeleteProgram(programHandle)

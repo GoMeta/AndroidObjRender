@@ -19,6 +19,7 @@ import android.opengl.GLES20
 import de.javagl.obj.Obj
 import de.javagl.obj.ObjData
 import de.javagl.obj.Rect3D
+import timber.log.Timber
 
 /**
  *
@@ -54,7 +55,7 @@ class SingleObjRenderer(
             // Already initialized for this GL context
             return
         } else if (owningThreadId != null) {
-            throw RuntimeException("This renderer is owned by another GL context")
+            Timber.w("This renderer is owned by another GL context")
         }
         // Make sure the material was created
         mtl.createOnGlThread()
@@ -126,7 +127,8 @@ class SingleObjRenderer(
     override fun destroy() {
         // Do not destroy the MtlRenderer, others might be using it.
         if (owningThreadId != Thread.currentThread().id) {
-            throw RuntimeException("Calling destroy() from non-owning thread")
+            Timber.w("Calling destroy() from non-owning thread")
+            return
         }
 
         GLES20.glDeleteBuffers(_buffers.size, _buffers, 0)
