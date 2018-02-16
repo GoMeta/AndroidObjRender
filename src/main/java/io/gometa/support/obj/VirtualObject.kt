@@ -1,4 +1,17 @@
-// Copyright (c) 2018 GoMeta. All right reserved.
+/*
+ * Copyright (c) 2018 GoMeta Inc. All Rights Reserver
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package io.gometa.support.obj
 
@@ -6,6 +19,7 @@ import android.content.Context
 import android.opengl.GLES20
 import android.support.annotation.FloatRange
 import android.support.annotation.RawRes
+import de.javagl.obj.Rect3D
 import timber.log.Timber
 import java.io.BufferedReader
 import java.io.IOException
@@ -140,6 +154,11 @@ interface VirtualObject {
          */
         fun pixelsToMeters(pixels: Int, dpi: Float): Float = pixels / (dpi * INCHES_PER_METER)
     }
+
+    /**
+     * The bounds of the object.
+     */
+    val bounds: Rect3D
 
     /**
      * Create the GLES20 program and allocate and other OpenGL resources.

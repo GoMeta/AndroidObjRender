@@ -1,9 +1,21 @@
-// Copyright (c) 2018 GoMeta. All right reserved.
+/*
+ * Copyright (c) 2018 GoMeta Inc. All Rights Reserver
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package io.gometa.support.obj
 
 import android.content.Context
-import android.opengl.ETC1Util.loadTexture
 import android.opengl.GLES20
 import android.opengl.GLUtils
 import android.opengl.Matrix
@@ -11,6 +23,7 @@ import com.bumptech.glide.Glide
 import de.javagl.obj.Mtl
 import de.javagl.obj.TextureOptions
 import io.gometa.support.obj.VirtualObject.Companion.normalizeVec3
+import timber.log.Timber
 
 /**
  *
@@ -18,13 +31,14 @@ import io.gometa.support.obj.VirtualObject.Companion.normalizeVec3
 class MtlRenderer(
     private val context: Context,
     private val mtl: Mtl
-) : VirtualObject {
+) {
 
     private val textureOptionMap = HashMap<TextureOptions, Int>()
     private var programHandle = 0
 
     private var modelViewUniform = 0
     private var modelViewProjectionUniform = 0
+    private var illuminationModeUniform = 0
     private var lightingParameterUniform = 0
     private var materialParametersUniform = 0
     private var materialAmbientLightingUniform = 0
@@ -48,12 +62,12 @@ class MtlRenderer(
 
     private var owningThreadId: Long? = null
 
-    override fun createOnGlThread() {
+    fun createOnGlThread() {
         if (owningThreadId == Thread.currentThread().id) {
             // Already initialized for this GL context
             return
         } else if (owningThreadId != null) {
-            throw RuntimeException("This renderer is owned by another GL context")
+            Timber.w("This renderer is owned by another GL context")
         }
 
         // Allocate the textures
@@ -85,6 +99,7 @@ class MtlRenderer(
         GLES20.glUseProgram(programHandle)
         modelViewUniform = GLES20.glGetUniformLocation(programHandle, "u_ModelView")
         modelViewProjectionUniform = GLES20.glGetUniformLocation(programHandle, "u_ModelViewProjection")
+        illuminationModeUniform = GLES20.glGetUniformLocation(programHandle, "u_IlluminationMode")
         textureUniform = GLES20.glGetUniformLocation(programHandle, "u_Texture")
         textureValidUniform = GLES20.glGetUniformLocation(programHandle, "u_TextureValid")
         lightingParameterUniform = GLES20.glGetUniformLocation(programHandle, "u_LightingParameters")
@@ -100,7 +115,7 @@ class MtlRenderer(
         owningThreadId = Thread.currentThread().id
     }
 
-    override fun updateModelMatrix(anchorMatrix: FloatArray, scaleFactor: Float) {
+    fun updateModelMatrix(anchorMatrix: FloatArray, scaleFactor: Float) {
         Matrix.setIdentityM(scaleMatrix, 0)
         scaleMatrix[0] = scaleFactor
         scaleMatrix[5] = scaleFactor
@@ -108,8 +123,9 @@ class MtlRenderer(
         Matrix.multiplyMM(modelMatrix, 0, anchorMatrix, 0, scaleMatrix, 0)
     }
 
-    override fun draw(viewMatrix: FloatArray, projectionMatrix: FloatArray,
+    fun draw(viewMatrix: FloatArray, projectionMatrix: FloatArray,
         lightingParameters: LightingParameters) {
+        createOnGlThread()
         Matrix.multiplyMM(modelViewMatrix, 0, viewMatrix, 0, modelMatrix, 0)
         Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewMatrix, 0)
 
@@ -122,6 +138,8 @@ class MtlRenderer(
         GLES20.glUniform4f(lightingParameterUniform,
             viewLightDirection[0], viewLightDirection[1], viewLightDirection[2],
             lightingParameters.lightIntensity)
+
+        GLES20.glUniform1i(illuminationModeUniform, mtl.illuminationMode.intValue)
 
         // TODO This is crude at best and only handles map_Kd for textures, the majority of the work
         // will need to go here.
@@ -146,9 +164,10 @@ class MtlRenderer(
         }
     }
 
-    override fun destroy() {
+    fun destroy() {
         if (owningThreadId != Thread.currentThread().id) {
-            throw RuntimeException("Calling destroy() from non-owning thread")
+            Timber.w("Calling destroy() from non-owning thread")
+            return
         }
 
         GLES20.glDeleteProgram(programHandle)
@@ -176,7 +195,6 @@ class MtlRenderer(
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
         GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
-        Glide.get(context).bitmapPool.put(bitmap)
     }
 
     private fun loadTexture(opt: TextureOptions) {

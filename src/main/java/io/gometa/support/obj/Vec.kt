@@ -1,18 +1,31 @@
-// Copyright (c) 2018 GoMeta. All right reserved.
+/*
+ * Copyright (c) 2018 GoMeta Inc. All Rights Reserver
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package io.gometa.support.obj
 
 /**
  *
  */
-sealed class Vec2() {
+open class Vec2() {
     constructor(x: Float, y: Float) : this() {
         this.x = x
         this.y = y
     }
     var x: Float
         get() = array[0]
-        set(value) { array[1] = value }
+        set(value) { array[0] = value }
     var y: Float
         get() = array[1]
         set(value) { array[1] = value }
@@ -22,7 +35,7 @@ sealed class Vec2() {
 /**
  *
  */
-sealed class Vec3() : Vec2() {
+open class Vec3() : Vec2() {
     constructor(x: Float, y: Float, z: Float) : this() {
         this.x = x
         this.y = y
@@ -37,7 +50,7 @@ sealed class Vec3() : Vec2() {
 /**
  *
  */
-class Vec4() : Vec3() {
+open class Vec4() : Vec3() {
     constructor(x: Float, y: Float, z: Float, w: Float) : this() {
         this.x = x
         this.y = y
