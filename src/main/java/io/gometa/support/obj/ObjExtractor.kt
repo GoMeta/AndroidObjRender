@@ -30,6 +30,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
@@ -52,6 +53,7 @@ class ObjExtractor(
     }
 
     private val targetDir = File(context.cacheDir, fileName)
+    private val startTimestamp = System.currentTimeMillis()
 
     private fun extractFiles() {
         if (targetDir.exists()) {
@@ -102,7 +104,7 @@ class ObjExtractor(
             return
         }
         val obj = ObjReader.read(FileInputStream(objFile))
-        val mtlMap = HashMap<String, MtlRenderer>()
+        val mtlMap = HashMap<String, MtlShader>()
         obj.mtlFileNames
             .map { "${targetDir.absolutePath}${File.separator}$it" }
             .forEach {
@@ -111,7 +113,7 @@ class ObjExtractor(
                 mtlList.forEach(this::fixTextureMapFilePaths)
                 // Add the mtls to the map
                 mtlMap.putAll(mtlList.associate {
-                    it.name to MtlRenderer(context, it)
+                    it.name to MtlShader.newShader(context, it)
                 })
             }
 
@@ -119,7 +121,7 @@ class ObjExtractor(
                 ?: run { createRenderers(mtlMap, obj) }
     }
 
-    private fun createRenderers(mtlMap: HashMap<String, MtlRenderer>, obj: Obj) {
+    private fun createRenderers(mtlMap: HashMap<String, MtlShader>, obj: Obj) {
         val renderers = ArrayList<SingleObjRenderer>()
         ObjUtils.convertToRenderable(obj)
             .let(ObjSplitting::splitByMaterialGroups)
@@ -161,6 +163,9 @@ class ObjExtractor(
             .build()
 
     private fun postResult(result: ObjRenderer?) {
+        val duration = System.currentTimeMillis() - startTimestamp
+        Timber.d("Extraction finished in %d.%03d seconds",
+            TimeUnit.MILLISECONDS.toSeconds(duration), duration % 1000)
         if (Looper.myLooper() == Looper.getMainLooper()) {
             callback.onExtractionFinished(result)
         } else {

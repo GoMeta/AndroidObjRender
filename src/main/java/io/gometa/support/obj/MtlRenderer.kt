@@ -16,7 +16,6 @@
 package io.gometa.support.obj
 
 import android.content.Context
-import android.opengl.ETC1Util.loadTexture
 import android.opengl.GLES20
 import android.opengl.GLUtils
 import android.opengl.Matrix
@@ -39,6 +38,7 @@ class MtlRenderer(
 
     private var modelViewUniform = 0
     private var modelViewProjectionUniform = 0
+    private var illuminationModeUniform = 0
     private var lightingParameterUniform = 0
     private var materialParametersUniform = 0
     private var materialAmbientLightingUniform = 0
@@ -99,6 +99,7 @@ class MtlRenderer(
         GLES20.glUseProgram(programHandle)
         modelViewUniform = GLES20.glGetUniformLocation(programHandle, "u_ModelView")
         modelViewProjectionUniform = GLES20.glGetUniformLocation(programHandle, "u_ModelViewProjection")
+        illuminationModeUniform = GLES20.glGetUniformLocation(programHandle, "u_IlluminationMode")
         textureUniform = GLES20.glGetUniformLocation(programHandle, "u_Texture")
         textureValidUniform = GLES20.glGetUniformLocation(programHandle, "u_TextureValid")
         lightingParameterUniform = GLES20.glGetUniformLocation(programHandle, "u_LightingParameters")
@@ -137,6 +138,8 @@ class MtlRenderer(
         GLES20.glUniform4f(lightingParameterUniform,
             viewLightDirection[0], viewLightDirection[1], viewLightDirection[2],
             lightingParameters.lightIntensity)
+
+        GLES20.glUniform1i(illuminationModeUniform, mtl.illuminationMode.intValue)
 
         // TODO This is crude at best and only handles map_Kd for textures, the majority of the work
         // will need to go here.

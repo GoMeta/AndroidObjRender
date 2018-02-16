@@ -25,7 +25,7 @@ open class Vec2() {
     }
     var x: Float
         get() = array[0]
-        set(value) { array[1] = value }
+        set(value) { array[0] = value }
     var y: Float
         get() = array[1]
         set(value) { array[1] = value }

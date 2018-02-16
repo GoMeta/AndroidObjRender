@@ -19,6 +19,7 @@ import android.opengl.GLES20
 import de.javagl.obj.Obj
 import de.javagl.obj.ObjData
 import de.javagl.obj.Rect3D
+import io.gometa.support.obj.mlt.MtlShaderImpl
 import timber.log.Timber
 
 /**
@@ -26,8 +27,13 @@ import timber.log.Timber
  */
 class SingleObjRenderer(
     private val obj: Obj,
-    private val mtl: MtlRenderer
+    private val mtl: MtlShader
 ) : VirtualObject {
+
+    private val useVaryingNormal: Boolean = (0 until obj.numFaces)
+        .asSequence()
+        .map { obj.getFace(it) }
+        .all { it.containsNormalIndices() }
 
     private val indices = ObjData.convertToShortBuffer(ObjData.getFaceVertexIndices(obj))
     private val vertices = ObjData.getVertices(obj)
@@ -95,7 +101,8 @@ class SingleObjRenderer(
     override fun draw(viewMatrix: FloatArray, projectionMatrix: FloatArray,
         lightingParameters: LightingParameters) {
         createOnGlThread()
-        mtl.draw(viewMatrix, projectionMatrix, lightingParameters)
+        (mtl as? MtlShaderImpl)?.useVaryingNormal = useVaryingNormal
+        mtl.preDraw(viewMatrix, projectionMatrix, lightingParameters)
 
         // Set the vertex attributes
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vertexBufferId)

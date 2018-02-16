@@ -22,7 +22,7 @@ import de.javagl.obj.Rect3D
  */
 class ObjRenderer(
     private val parts: List<VirtualObject>,
-    private val mtls: Collection<MtlRenderer>? = null
+    private val mtls: Collection<MtlShader>? = null
 ) : VirtualObject {
 
     private val _bounds: Rect3D
