@@ -30,12 +30,14 @@ class ObjRenderer(
     override val bounds: Rect3D
         get() = _bounds
 
+    override var scaleFactor: Float = 1f
+
     override fun createOnGlThread() {
         parts.forEach { it.createOnGlThread() }
     }
 
     override fun updateModelMatrix(anchorMatrix: FloatArray, scaleFactor: Float) {
-        parts.forEach { it.updateModelMatrix(anchorMatrix, scaleFactor) }
+        parts.forEach { it.updateModelMatrix(anchorMatrix, this.scaleFactor * scaleFactor) }
     }
 
     override fun draw(

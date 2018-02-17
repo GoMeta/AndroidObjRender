@@ -161,6 +161,11 @@ interface VirtualObject {
     val bounds: Rect3D
 
     /**
+     * The scale factor of the object
+     */
+    var scaleFactor: Float
+
+    /**
      * Create the GLES20 program and allocate and other OpenGL resources.
      */
     fun createOnGlThread()

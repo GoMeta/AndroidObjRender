@@ -30,6 +30,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
@@ -43,7 +44,9 @@ class ObjExtractor(
     private val zipFile: InputStream,
     private val callback: OnExtractionListener,
     private val diskIoHandler: Handler? = null,
-    private val computeHandler: Handler? = null
+    private val computeHandler: Handler? = null,
+    private val diskIoExecutor: Executor? = null,
+    private val computeExecutor: Executor? = null
 ) {
     companion object {
         private val mainHandler = Handler(Looper.getMainLooper())
@@ -117,8 +120,11 @@ class ObjExtractor(
                 })
             }
 
-        computeHandler?.post { createRenderers(mtlMap, obj) }
-                ?: run { createRenderers(mtlMap, obj) }
+        when {
+            computeHandler != null -> computeHandler.post { createRenderers(mtlMap, obj) }
+            computeExecutor != null -> computeExecutor.execute { createRenderers(mtlMap, obj) }
+            else -> createRenderers(mtlMap, obj)
+        }
     }
 
     private fun createRenderers(mtlMap: HashMap<String, MtlShader>, obj: Obj) {
@@ -174,7 +180,10 @@ class ObjExtractor(
     }
 
     init {
-        diskIoHandler?.post { extractFiles() }
-                ?: run { extractFiles() }
+        when {
+            diskIoHandler != null -> diskIoHandler.post { extractFiles() }
+            diskIoExecutor != null -> diskIoExecutor.execute { extractFiles() }
+            else -> extractFiles()
+        }
     }
 }

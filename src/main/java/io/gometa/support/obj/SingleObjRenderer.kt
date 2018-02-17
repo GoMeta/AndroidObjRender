@@ -53,6 +53,8 @@ class SingleObjRenderer(
 
     private var owningThreadId: Long? = null
 
+    override var scaleFactor: Float = 1f
+
     override val bounds: Rect3D
         get() = obj.rect3D ?: throw IllegalStateException("Obj bounds must be non-null")
 
@@ -95,7 +97,7 @@ class SingleObjRenderer(
     }
 
     override fun updateModelMatrix(anchorMatrix: FloatArray, scaleFactor: Float) {
-        mtl.updateModelMatrix(anchorMatrix, scaleFactor)
+        mtl.updateModelMatrix(anchorMatrix, this.scaleFactor * scaleFactor)
     }
 
     override fun draw(viewMatrix: FloatArray, projectionMatrix: FloatArray,

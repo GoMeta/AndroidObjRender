@@ -23,13 +23,40 @@ open class Vec2() {
         this.x = x
         this.y = y
     }
+
     var x: Float
         get() = array[0]
         set(value) { array[0] = value }
+
     var y: Float
         get() = array[1]
         set(value) { array[1] = value }
+
     open val array = FloatArray(2)
+
+    fun set(vararg values: Float) {
+        values.take(array.size)
+            .forEachIndexed { index, fl ->
+                array[index] = fl
+            }
+    }
+
+    fun normalize() {
+        val length = array.sumByDouble { (it * it).toDouble() }.toFloat()
+        (0 until array.size).forEach {
+            array[it] /= length
+        }
+    }
+
+    fun invert() {
+        (0 until array.size).forEach {
+            array[it] = -array[it]
+        }
+    }
+
+    override fun toString(): String {
+        return array.joinToString(prefix = "Vec2(", postfix = ")")
+    }
 }
 
 /**
@@ -41,10 +68,16 @@ open class Vec3() : Vec2() {
         this.y = y
         this.z = z
     }
+
     var z: Float
         get() = array[2]
         set(value) { array[2] = value }
+
     override val array = FloatArray(3)
+
+    override fun toString(): String {
+        return array.joinToString(prefix = "Vec3(", postfix = ")")
+    }
 }
 
 /**
@@ -57,8 +90,14 @@ open class Vec4() : Vec3() {
         this.z = z
         this.w = w
     }
+
     var w: Float
         get() = array[3]
         set(value) { array[3] = value }
+
     override val array = FloatArray(4)
+
+    override fun toString(): String {
+        return array.joinToString(prefix = "Vec4(", postfix = ")")
+    }
 }
